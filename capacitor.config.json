@@ -1,0 +1,29 @@
+{
+  "appId": "com.tiangow.classroom",
+  "appName": "天九牌教室",
+  "webDir": "www",
+  "backgroundColor": "#38241e",
+  "android": {
+    "allowMixedContent": false,
+    "webContentsDebuggingEnabled": false,
+    "adjustMarginsForEdgeToEdge": "auto"
+  },
+  "ios": {
+    "contentInset": "never",
+    "scrollEnabled": true
+  },
+  "plugins": {
+    "SplashScreen": {
+      "launchShowDuration": 1200,
+      "launchAutoHide": true,
+      "backgroundColor": "#38241e",
+      "showSpinner": false,
+      "androidScaleType": "CENTER_CROP"
+    },
+    "StatusBar": {
+      "overlaysWebView": false,
+      "style": "DARK",
+      "backgroundColor": "#38241e"
+    }
+  }
+}

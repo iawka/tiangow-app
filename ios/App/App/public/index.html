@@ -1,0 +1,780 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,maximum-scale=1,user-scalable=no">
+<meta name="theme-color" content="#38241e">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="天九牌">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<title>天九牌教室</title>
+<style>
+/* base reset (same as the published web page) */
+:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+body{margin:0;font:14px system-ui,sans-serif;-webkit-text-size-adjust:100%}
+img{max-width:100%}
+[hidden]{display:none!important}
+/* app tweaks */
+html{-webkit-tap-highlight-color:transparent}
+button,.tabs,.htile,.tile{-webkit-user-select:none;user-select:none;touch-action:manipulation}
+body{overscroll-behavior-y:none}
+</style>
+</head>
+<body>
+<style>
+/* Layout: pale jade-grey page with a rosewood card table; tabs switch 規則 / 示範 / 對局. Tiles are ivory in both themes. */
+:root{
+  --bg:#e6eae3; --surface:#f4f6f1; --ink:#1c221f; --muted:#56615a; --line:#c3cbc3;
+  --accent:#a4302a; --accent-ink:#ffffff; --jade:#2b6a54; --jade-soft:#d2e5da;
+  --table:#38241e; --table-2:#4a2f27; --table-line:#6b4739; --table-ink:#f1e7d6; --table-muted:#c8b39d;
+  --tile:#f3eddc; --tile-shade:#d9cdb2; --tile-edge:#b3a483; --pip:#1b1916; --pip-red:#c22f28;
+  --back:#1e5848; --back-2:#3c8a73; --shadow:rgba(20,10,5,.28);
+  --f-display:"Songti TC","STSong","Noto Serif CJK TC","Source Han Serif TC","Noto Serif TC","PMingLiU","MingLiU","SimSun",serif;
+  --f-body:"PingFang TC","Noto Sans CJK TC","Source Han Sans TC","Microsoft JhengHei","Heiti TC",system-ui,sans-serif;
+  --f-num:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#121614; --surface:#1a201d; --ink:#e1e6df; --muted:#97a29a; --line:#2d3731;
+  --accent:#e2675a; --accent-ink:#1a0d0b; --jade:#73b89d; --jade-soft:#1f3a30;
+  --table:#2c1c17; --table-2:#3d271f; --table-line:#5a3c31; --shadow:rgba(0,0,0,.5);
+  color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#121614; --surface:#1a201d; --ink:#e1e6df; --muted:#97a29a; --line:#2d3731;
+  --accent:#e2675a; --accent-ink:#1a0d0b; --jade:#73b89d; --jade-soft:#1f3a30;
+  --table:#2c1c17; --table-2:#3d271f; --table-line:#5a3c31; --shadow:rgba(0,0,0,.5);
+  color-scheme:dark}
+
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.65}
+.page{max-width:1120px;margin:0 auto;padding-block:16px 56px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+button{font:inherit;color:inherit}
+button:focus-visible,.htile:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+
+/* masthead */
+.mast{display:flex;gap:28px;align-items:center;flex-wrap:wrap;padding-block:18px 22px}
+.mast-tiles{display:flex;gap:6px;transform:rotate(-7deg);--tw:44px;padding:6px}
+.mast h1{font-family:var(--f-display);font-weight:700;font-size:clamp(46px,10vw,80px);line-height:1;margin:0;letter-spacing:.06em;text-wrap:balance}
+.eyebrow{font-size:12px;letter-spacing:.22em;color:var(--accent);margin:0 0 8px}
+.lede{color:var(--muted);margin:12px 0 0;max-width:34em}
+
+/* tabs */
+.tabs{display:flex;gap:2px;border-bottom:1px solid var(--line);margin-bottom:26px;overflow-x:auto}
+.tabs button{appearance:none;background:none;border:0;border-bottom:3px solid transparent;margin-bottom:-1px;padding:10px 18px;font-family:var(--f-display);font-size:19px;color:var(--muted);cursor:pointer;white-space:nowrap}
+.tabs button:hover{color:var(--ink)}
+.tabs button[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--accent);font-weight:700}
+.tabs .num{font-family:var(--f-num);font-size:12px;color:var(--accent);margin-right:6px}
+
+/* tiles */
+.tile{display:inline-block;width:var(--tw,40px);aspect-ratio:1/2;flex:none;line-height:0}
+.tile svg{width:100%;height:100%;display:block;overflow:visible;filter:drop-shadow(0 2px 2px var(--shadow))}
+.tf{fill:var(--tile);stroke:var(--tile-edge);stroke-width:1.2}
+.tl{stroke:var(--tile-shade);stroke-width:1.4}
+.pk{fill:var(--pip)} .pr{fill:var(--pip-red)}
+.bk{fill:var(--back);stroke:var(--tile-edge);stroke-width:1.2} .bk2{fill:none;stroke:var(--back-2);stroke-width:1.4}
+.tiles{display:inline-flex;gap:4px;align-items:flex-end;vertical-align:middle}
+
+/* rules */
+.rules{display:grid;gap:44px}
+.rules h2{font-family:var(--f-display);font-size:28px;margin:0 0 6px;text-wrap:balance}
+.rules h3{font-family:var(--f-display);font-size:20px;margin:22px 0 10px}
+.rules p{margin:0 0 10px;max-width:42em}
+.sec-num{font-family:var(--f-num);color:var(--accent);font-size:14px;margin-right:10px;letter-spacing:.05em}
+.civ-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
+.civ{display:grid;grid-template-columns:auto 1fr;gap:4px 12px;align-items:center;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:10px 12px;--tw:30px}
+.civ .tile{grid-row:span 3}
+.civ .rk{font-family:var(--f-num);font-size:12px;color:var(--accent)}
+.civ .nm{font-family:var(--f-display);font-size:18px;font-weight:700;line-height:1.2}
+.civ .pp{font-family:var(--f-num);font-size:12px;color:var(--muted)}
+.mil-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:10px}
+.mil-grid .civ{--tw:30px}
+.mil-grid .civ .tiles{grid-row:span 3}
+.note{border-left:3px solid var(--jade);background:var(--jade-soft);padding:10px 14px;border-radius:0 8px 8px 0;max-width:46em}
+.table-wrap{overflow-x:auto}
+table.kinds{border-collapse:collapse;width:100%;min-width:560px}
+table.kinds th,table.kinds td{text-align:left;padding:10px 12px;border-bottom:1px solid var(--line);vertical-align:middle}
+table.kinds th{font-size:12px;letter-spacing:.12em;color:var(--muted);font-weight:600}
+table.kinds td:first-child{font-family:var(--f-display);font-size:17px;font-weight:700;white-space:nowrap}
+table.kinds .tiles{--tw:22px}
+table.kinds .ex{white-space:nowrap}
+table.kinds .ex small{display:block;color:var(--muted);font-size:12px;margin-top:4px;line-height:1.3}
+ol.steps{margin:0;padding:0;list-style:none;counter-reset:s;display:grid;gap:10px;max-width:44em}
+ol.steps li{counter-increment:s;display:grid;grid-template-columns:32px 1fr;gap:10px}
+ol.steps li::before{content:counter(s);font-family:var(--f-num);font-size:13px;width:26px;height:26px;border-radius:50%;border:1px solid var(--accent);color:var(--accent);display:grid;place-items:center;margin-top:1px}
+ul.plain{margin:0;padding-left:1.2em;max-width:44em}
+ul.plain li{margin-bottom:6px}
+.cta{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
+
+.btn{appearance:none;border:1px solid var(--line);background:var(--surface);padding:8px 16px;border-radius:999px;cursor:pointer;font-size:15px}
+.btn:hover{border-color:var(--ink)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink);font-weight:600}
+.btn.primary:hover{filter:brightness(1.08)}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+
+/* demo */
+.demo-bar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:14px}
+.demo-prog{flex:1 1 160px;min-width:0;display:grid;gap:6px}
+.demo-prog span{font-family:var(--f-num);font-size:12px;color:var(--muted)}
+.bar{height:4px;background:var(--line);border-radius:4px;overflow:hidden}
+.bar i{display:block;height:100%;background:var(--accent);width:0;transition:width .25s}
+.narr{background:var(--surface);border:1px solid var(--line);border-left:4px solid var(--accent);border-radius:0 10px 10px 0;padding:14px 18px;font-size:16px;min-height:76px;margin-bottom:16px}
+.narr b{color:var(--accent)}
+.narr .kicker{display:block;font-size:12px;letter-spacing:.14em;color:var(--muted);margin-bottom:4px}
+.dtable{background:radial-gradient(120% 90% at 50% 0%,var(--table-2),var(--table));color:var(--table-ink);border-radius:16px;padding:10px;display:grid;gap:6px;box-shadow:inset 0 0 0 1px var(--table-line)}
+.drow{display:grid;grid-template-columns:96px 1fr auto;gap:12px;align-items:center;padding:10px 12px;border-radius:10px;border:1px solid transparent}
+.drow.act{border-color:var(--table-line);background:rgba(255,255,255,.05)}
+.drow-head{font-family:var(--f-display);font-size:17px;line-height:1.25}
+.drow-head small{display:block;font-family:var(--f-body);font-size:12px;color:var(--table-muted)}
+.dhand{display:flex;flex-wrap:wrap;gap:3px;--tw:22px;min-width:0}
+.dplay{display:flex;gap:3px;align-items:center;--tw:26px;min-height:58px;min-width:120px;justify-content:flex-end}
+.badge{display:inline-block;font-size:11px;line-height:1;padding:4px 7px;border-radius:999px;font-family:var(--f-body);font-weight:600;letter-spacing:.04em;vertical-align:middle}
+.b-bank{background:var(--accent);color:var(--accent-ink)}
+.b-lead{background:var(--jade);color:var(--table)}
+.b-pad{background:var(--table-line);color:var(--table-ink)}
+.padded .tile{opacity:.45}
+.fresh .tile{animation:pop .35s ease-out}
+@keyframes pop{from{transform:translateY(-8px) scale(.9);opacity:.2}to{transform:none;opacity:1}}
+
+/* play */
+.play-grid{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:20px;align-items:start}
+.scorebar{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-bottom:12px}
+.sc{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:8px 10px;min-width:0}
+.sc .who{font-size:13px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sc .pts{font-family:var(--f-num);font-size:22px;font-variant-numeric:tabular-nums;line-height:1.2}
+.sc .tr{font-size:12px;color:var(--muted)}
+.sc.me{border-color:var(--accent)}
+.felt{position:relative;background:radial-gradient(120% 90% at 50% 40%,var(--table-2),var(--table));color:var(--table-ink);border-radius:18px;padding:12px;display:grid;grid-template-columns:1fr 1.15fr 1fr;grid-template-areas:". n ." "w c e" ". s .";gap:8px;box-shadow:inset 0 0 0 1px var(--table-line);min-height:360px}
+.seat{display:flex;flex-direction:column;align-items:center;gap:4px;min-width:0;padding:6px 4px;border-radius:10px;border:1px solid transparent;text-align:center}
+.seat[data-p="2"]{grid-area:n}.seat[data-p="3"]{grid-area:w}.seat[data-p="1"]{grid-area:e}.seat[data-p="0"]{grid-area:s}
+.seat.turn{border-color:var(--table-line);background:rgba(255,255,255,.05)}
+.seat-name{font-family:var(--f-display);font-size:16px;line-height:1.2}
+.seat.turn .seat-name::before{content:"";display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--pip-red);margin-right:6px;vertical-align:middle;box-shadow:0 0 0 3px rgba(194,47,40,.3)}
+.seat-meta{font-size:12px;color:var(--table-muted)}
+.played{display:flex;gap:3px;--tw:var(--ptw,30px);min-height:calc(var(--ptw,30px)*2 + 2px);align-items:center;justify-content:center;flex-wrap:wrap}
+.center{grid-area:c;display:grid;place-items:center;text-align:center;font-size:13px;color:var(--table-muted);padding:6px;min-width:0}
+.center strong{display:block;font-family:var(--f-display);font-size:17px;color:var(--table-ink);font-weight:700;line-height:1.35}
+.result{position:absolute;inset:10px;background:var(--table);border:1px solid var(--table-line);border-radius:14px;display:grid;place-content:center;gap:12px;padding:18px;text-align:center;z-index:2}
+.result h3{font-family:var(--f-display);font-size:24px;margin:0}
+.result table{border-collapse:collapse;margin:0 auto;font-size:14px}
+.result td{padding:4px 12px;border-bottom:1px solid var(--table-line);font-variant-numeric:tabular-nums}
+.result td.num{font-family:var(--f-num);text-align:right}
+.you{margin-top:14px;display:grid;gap:10px}
+.status{font-size:15px}
+.status .sel{display:block;font-size:14px;color:var(--muted)}
+.status .sel.ok{color:var(--jade)} .status .sel.warn{color:var(--accent)}
+.hand{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:6px;max-width:560px}
+.htile{appearance:none;border:0;background:none;padding:6px 0 4px;cursor:pointer;display:grid;justify-items:center;gap:4px;border-radius:8px;transition:transform .15s}
+.htile .tile{width:100%;max-width:56px}
+.htile .tname{font-size:11px;color:var(--muted);line-height:1.1;white-space:nowrap}
+.htile[aria-pressed="true"]{transform:translateY(-10px)}
+.htile[aria-pressed="true"] .tname{color:var(--accent);font-weight:700}
+.htile[aria-pressed="true"] svg{filter:drop-shadow(0 0 0 var(--accent)) drop-shadow(0 6px 6px var(--shadow))}
+.htile[aria-pressed="true"] .tf{stroke:var(--accent);stroke-width:2.6}
+.htile:disabled{cursor:default}
+.actions{display:flex;gap:8px;flex-wrap:wrap}
+.hints{display:flex;flex-wrap:wrap;gap:8px;font-size:14px}
+.hints:empty{display:none}
+.hint{display:inline-flex;gap:8px;align-items:center;border:1px solid var(--line);background:var(--surface);border-radius:10px;padding:6px 10px;cursor:pointer;--tw:16px;text-align:left}
+.hint:hover{border-color:var(--jade)}
+.hint .sure{font-size:11px;color:var(--jade);font-weight:700}
+.hints p{margin:0;color:var(--muted)}
+.log{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px 16px;max-height:620px;overflow:auto;min-width:0}
+.log h3{font-family:var(--f-display);font-size:18px;margin:0 0 8px}
+.log ol{list-style:none;margin:0;padding:0;display:grid;gap:8px;font-size:13.5px}
+.log li{padding-bottom:8px;border-bottom:1px solid var(--line)}
+.log li.win{color:var(--jade);font-weight:600}
+.log li.sys{color:var(--muted)}
+.play-top{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:10px}
+.play-top p{margin:0;color:var(--muted);font-size:14px}
+
+@media (max-width:860px){
+  .play-grid{grid-template-columns:minmax(0,1fr)}
+  .log{max-height:320px}
+}
+@media (max-width:560px){
+  .felt{--ptw:22px;padding:8px;gap:4px;min-height:300px}
+  .seat-name{font-size:14px}
+  .drow{grid-template-columns:1fr;gap:6px}
+  .dplay{justify-content:flex-start;min-height:52px}
+  .mast-tiles{--tw:34px}
+  .hand{gap:3px}
+  .sc{padding:6px 8px}.sc .pts{font-size:18px}
+}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+
+<div class="page">
+  <header class="mast">
+    <div class="mast-tiles" id="mastTiles" aria-hidden="true"></div>
+    <div>
+      <p class="eyebrow">三十二隻骨牌 · 四人吃墩</p>
+      <h1>天九牌</h1>
+      <p class="lede">先看規則，再一步一步看一局示範，然後跟三位電腦對手實戰。</p>
+    </div>
+  </header>
+
+  <nav class="tabs" role="tablist" aria-label="章節">
+    <button role="tab" id="t-rules" data-view="rules"><span class="num">一</span>規則</button>
+    <button role="tab" id="t-demo" data-view="demo"><span class="num">二</span>示範</button>
+    <button role="tab" id="t-play" data-view="play"><span class="num">三</span>對局</button>
+  </nav>
+
+  <!-- RULES -->
+  <section id="v-rules" class="view rules" role="tabpanel" aria-labelledby="t-rules">
+    <div>
+      <h2><span class="sec-num">01</span>三十二隻牌</h2>
+      <p>天九牌用一副 32 隻的中國骨牌。每隻牌分上下兩半，每半有 1 至 6 點。1 點和 4 點是紅色的，天牌的點則一半紅、一半黑。牌分成<b>文牌</b>和<b>武牌</b>兩類，兩類各自比大小，<b>文不打武、武不打文</b>。</p>
+      <h3>文牌：11 種，每種兩隻（共 22 隻），由大到小</h3>
+      <div class="civ-grid" id="civGrid"></div>
+      <h3>武牌：10 隻，按總點數命名，由大到小</h3>
+      <div class="mil-grid" id="milGrid"></div>
+      <p class="note" style="margin-top:14px">同一點數的兩隻武牌（例如 4·5 和 3·6 兩隻雜九）一樣大。二四（2·4）和丁三（1·2）各只有一隻：單出時二四排在雜七和雜五之間，丁三是全副最小的牌。兩隻合起來就是<b>至尊</b>，規則特別，見下面的牌型表。</p>
+    </div>
+
+    <div>
+      <h2><span class="sec-num">02</span>牌型</h2>
+      <p>先出的人可以出 1 至 4 隻牌，但必須是下面其中一種牌型。要壓過別人，牌型和文武組成都要相同，而且每一隻都要比對方相應的那隻大。</p>
+      <div class="table-wrap">
+        <table class="kinds">
+          <thead><tr><th>牌型</th><th>例子</th><th>怎樣比大小</th></tr></thead>
+          <tbody>
+            <tr><td>單張</td><td class="ex"><span class="tiles" data-t="tian"></span> <span class="tiles" data-t="j9a"></span><small>天牌 · 雜九</small></td><td>文牌只能被更大的文牌打，武牌只能被更大的武牌打。</td></tr>
+            <tr><td>文對</td><td class="ex"><span class="tiles" data-t="tian,tian"></span><small>天對</small></td><td>兩隻相同的文牌。次序跟單張一樣：天對最大，銅錘六對最小。</td></tr>
+            <tr><td>武對</td><td class="ex"><span class="tiles" data-t="j9a,j9b"></span><small>雜九對</small></td><td>點數相同的兩隻武牌。雜九對 &gt; 雜八對 &gt; 雜七對 &gt; 雜五對。</td></tr>
+            <tr><td>至尊</td><td class="ex"><span class="tiles" data-t="ding3,er4"></span><small>丁三 + 二四</small></td><td>不算武對，自成一格：先出必勝，沒有牌可以壓過它；但跟牌時它壓不過任何對子，只能當墊牌。</td></tr>
+            <tr><td>文武配</td><td class="ex"><span class="tiles" data-t="tian,j9a"></span><small>天九</small></td><td>自成一類，只有四種：天九 &gt; 地八 &gt; 人七 &gt; 和五。</td></tr>
+            <tr><td>三隻</td><td class="ex"><span class="tiles" data-t="tian,tian,j9a"></span><small>天天九（另一種是天九九）</small></td><td>一個文武配再加一隻同家族的牌。「兩文一武」只打「兩文一武」，「一文兩武」只打「一文兩武」。天 &gt; 地 &gt; 人 &gt; 和。</td></tr>
+            <tr><td>四隻</td><td class="ex"><span class="tiles" data-t="tian,tian,j9a,j9b"></span><small>天天九九</small></td><td>文對加武對，同一家族。天 &gt; 地 &gt; 人 &gt; 和。除了這四種，其他兩對不能一起出。</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div>
+      <h2><span class="sec-num">03</span>一墩怎樣打</h2>
+      <ol class="steps">
+        <li><span>四人每人 8 隻牌。莊家先出（本遊戲第一局由你做莊，之後由上一局的贏家做莊）。</span></li>
+        <li><span>出牌次序是逆時針：南 → 東 → 北 → 西。</span></li>
+        <li><span>先出的人選一個牌型出牌：單張、對子、三隻或四隻。</span></li>
+        <li><span>其他三家必須出<b>同樣數量</b>的牌。</span></li>
+        <li><span>想壓過，要出<b>同類而且更大</b>的牌型。對子只打對子，文對只打文對。不用跟同類，也不一定要壓。</span></li>
+        <li><span>打不過（或不想打），就把任何同樣數量的牌<b>蓋住墊出</b>。墊牌不計大小，也不能贏。</span></li>
+        <li><span>兩手牌一樣大時，<b>先出者為大</b>。</span></li>
+        <li><span>這一墩最大的人收下牌，並由他先出下一手。</span></li>
+      </ol>
+    </div>
+
+    <div>
+      <h2><span class="sec-num">04</span>勝負與計分</h2>
+      <ul class="plain">
+        <li>四家的牌全部出完就是一局。<b>贏得最後一墩的人贏得本局。</b></li>
+        <li>墩數按贏牌時自己出的隻數計：用對子贏一墩，就收 2 墩。一局共有 8 墩。</li>
+        <li><b>以 4 墩為標準。</b>其他三家各自跟贏家結算：少於 4 墩的，差多少付多少給贏家；多於 4 墩的，由贏家付差額；一墩都沒有的付 5 分。</li>
+        <li><b>莊家加倍：</b>凡是莊家付出或收取的分數都加倍。</li>
+        <li><b>即時收分：</b>用至尊贏一墩，即時向其他三家各收 2 分；用四隻組合贏一墩，各收 4 分（涉及莊家同樣加倍）。</li>
+        <li>本遊戲沒有使用的地方規則：連莊倍數（香港）、尾墩用至尊／四隻／丁三贏時加倍、一人贏盡 8 墩加倍、頭七墩未贏過的人尾墩作廢、手上只有一隻紅點牌即勝等。各地玩法不同，真實牌局請先跟同桌約定。</li>
+      </ul>
+      <p class="note" style="margin-top:14px">小貼士：只有最後一墩決定勝負。前面贏的墩數只影響付多少分，所以大牌要留一手，用來搶最後一墩。</p>
+      <div class="cta">
+        <button class="btn primary" data-go="demo">看示範</button>
+        <button class="btn" data-go="play">直接對局</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- DEMO -->
+  <section id="v-demo" class="view" role="tabpanel" aria-labelledby="t-demo" hidden>
+    <div class="demo-bar">
+      <button class="btn" id="dPrev">上一步</button>
+      <button class="btn primary" id="dNext">下一步</button>
+      <button class="btn" id="dAuto">自動播放</button>
+      <div class="demo-prog"><span id="dStep"></span><div class="bar"><i id="dBar"></i></div></div>
+      <button class="btn" id="dRestart">重頭</button>
+    </div>
+    <div class="narr" id="dText" aria-live="polite"></div>
+    <div class="dtable" id="dTable"></div>
+    <p style="color:var(--muted);font-size:13px;margin-top:10px">示範中四家的牌全部攤開，墊牌也翻開顯示（半透明），方便你看清每一步。真實牌局中墊牌是蓋住的。可用鍵盤 ← → 切換步驟。</p>
+  </section>
+
+  <!-- PLAY -->
+  <section id="v-play" class="view" role="tabpanel" aria-labelledby="t-play" hidden>
+    <div class="play-top">
+      <p id="handInfo"></p>
+      <button class="btn" id="bNewGame">重新開始</button>
+    </div>
+    <div class="play-grid">
+      <div>
+        <div class="scorebar" id="scorebar"></div>
+        <div class="felt" id="felt">
+          <div class="seat" data-p="2"></div>
+          <div class="seat" data-p="3"></div>
+          <div class="center" id="center"></div>
+          <div class="seat" data-p="1"></div>
+          <div class="seat" data-p="0"></div>
+          <div class="result" id="result" hidden></div>
+        </div>
+        <div class="you">
+          <div class="status" id="status" aria-live="polite"></div>
+          <div class="hand" id="hand"></div>
+          <div class="actions">
+            <button class="btn primary" id="bPlay">出牌</button>
+            <button class="btn" id="bHint">提示</button>
+            <button class="btn" id="bClear">清除選擇</button>
+          </div>
+          <div class="hints" id="hints"></div>
+        </div>
+      </div>
+      <aside class="log"><h3>牌局解說</h3><ol id="log"></ol></aside>
+    </div>
+  </section>
+</div>
+
+<script>
+/* ================= ENGINE ================= */
+const KINDS=[
+ {id:'tian',n:'天牌',a:6,b:6,c:'C',r:11,fam:4,pn:'天對',d:'最大的文牌'},
+ {id:'di',n:'地牌',a:1,b:1,c:'C',r:10,fam:3,pn:'地對'},
+ {id:'ren',n:'人牌',a:4,b:4,c:'C',r:9,fam:2,pn:'人對'},
+ {id:'he',n:'和牌',a:1,b:3,c:'C',r:8,fam:1,pn:'和對',alt:'又叫鵝牌'},
+ {id:'mei',n:'梅花',a:5,b:5,c:'C',r:7,pn:'梅花對'},
+ {id:'chang',n:'長三',a:3,b:3,c:'C',r:6,pn:'長三對'},
+ {id:'ban',n:'板凳',a:2,b:2,c:'C',r:5,pn:'板凳對'},
+ {id:'fu',n:'斧頭',a:5,b:6,c:'C',r:4,pn:'斧頭對',alt:'又叫虎頭'},
+ {id:'hong',n:'紅頭十',a:4,b:6,c:'C',r:3,pn:'紅頭十對'},
+ {id:'gao',n:'高腳七',a:1,b:6,c:'C',r:2,pn:'高腳七對'},
+ {id:'tong',n:'銅錘六',a:1,b:5,c:'C',r:1,pn:'銅錘六對',alt:'又叫玲瓏六'},
+ {id:'j9a',n:'雜九',a:4,b:5,c:'M',r:6,g:'9',fam:4},
+ {id:'j9b',n:'雜九',a:3,b:6,c:'M',r:6,g:'9',fam:4},
+ {id:'j8a',n:'雜八',a:2,b:6,c:'M',r:5,g:'8',fam:3},
+ {id:'j8b',n:'雜八',a:3,b:5,c:'M',r:5,g:'8',fam:3},
+ {id:'j7a',n:'雜七',a:2,b:5,c:'M',r:4,g:'7',fam:2},
+ {id:'j7b',n:'雜七',a:3,b:4,c:'M',r:4,g:'7',fam:2},
+ {id:'er4',n:'二四',a:2,b:4,c:'M',r:3,g:'zz'},
+ {id:'j5a',n:'雜五',a:1,b:4,c:'M',r:2,g:'5',fam:1},
+ {id:'j5b',n:'雜五',a:2,b:3,c:'M',r:2,g:'5',fam:1},
+ {id:'ding3',n:'丁三',a:1,b:2,c:'M',r:1,g:'zz'},
+];
+const KIND={};KINDS.forEach(k=>KIND[k.id]=k);
+const FAM={4:['天','九'],3:['地','八'],2:['人','七'],1:['和','五']};
+const ALL=[];
+KINDS.forEach(k=>{const copies=k.c==='C'?2:1;for(let i=0;i<copies;i++)ALL.push(Object.assign({uid:k.id+'#'+i},k));});
+
+function classify(ts){
+  const n=ts.length;
+  if(n===1){const t=ts[0];return {n,cat:t.c,rank:t.r,name:t.n};}
+  if(n===2){
+    const [a,b]=ts;
+    if(a.c==='C'&&b.c==='C') return a.id===b.id?{n,cat:'C',rank:a.r,name:a.pn}:null;
+    if(a.c==='M'&&b.c==='M'){
+      if(a.g!==b.g) return null;
+      return a.g==='zz'?{n,cat:'Z',rank:99,name:'至尊'}:{n,cat:'M',rank:a.r,name:a.n+'對'};
+    }
+    const c=a.c==='C'?a:b, m=a.c==='C'?b:a;
+    if(c.fam&&c.fam===m.fam) return {n,cat:'X',rank:c.fam,name:FAM[c.fam].join('')};
+    return null;
+  }
+  if(n===3||n===4){
+    const cs=ts.filter(t=>t.c==='C'), ms=ts.filter(t=>t.c==='M');
+    if(!cs.length||!ms.length) return null;
+    const f=cs[0].fam; if(!f) return null;
+    if(!cs.every(t=>t.id===cs[0].id)||!ms.every(t=>t.fam===f)) return null;
+    const [cc,mm]=FAM[f];
+    if(n===3){
+      if(cs.length===2) return {n,cat:'T',rank:f,name:cc+cc+mm};
+      return {n,cat:'U',rank:f,name:cc+mm+mm};
+    }
+    if(cs.length===2&&ms.length===2) return {n,cat:'Q',rank:f,name:cc+cc+mm+mm};
+  }
+  return null;
+}
+function catText(c){
+  if(c.cat==='C') return c.n===1?'文牌單張':'文對';
+  if(c.cat==='M') return c.n===1?'武牌單張':'武對';
+  return {X:'文武配',T:'兩文一武的三隻',U:'一文兩武的三隻',Q:'四隻組合',Z:'至尊'}[c.cat];
+}
+function beats(a,b){return !!a&&a.cat!=='Z'&&a.n===b.n&&a.cat===b.cat&&a.rank>b.rank;}
+function whyNot(c,best){
+  if(!c) return '這幾隻牌組不成牌型';
+  if(best.cat==='Z') return '至尊先出必勝，沒有牌可以壓過';
+  if(c.cat==='Z') return '至尊跟牌時壓不過任何牌，只能當墊牌';
+  if(c.cat!==best.cat) return catText(c)+'不能打'+catText(best);
+  if(c.rank===best.rank) return '一樣大，先出者為大';
+  return '比'+best.name+'小';
+}
+function subsets(arr,k){
+  const out=[];const cur=[];
+  (function rec(i){
+    if(cur.length===k){out.push(cur.slice());return;}
+    for(let j=i;j<=arr.length-(k-cur.length);j++){cur.push(arr[j]);rec(j+1);cur.pop();}
+  })(0);
+  return out;
+}
+function sortHand(h){return h.slice().sort((x,y)=>(x.c===y.c?0:x.c==='C'?-1:1)||(y.r-x.r)||x.id.localeCompare(y.id));}
+function tileVal(t,hand){
+  let v=t.c==='C'?t.r:t.id==='er4'?3:t.id==='ding3'?1:{'9':8,'8':6,'7':4,'5':2}[t.g];
+  if(t.g==='zz'&&hand.some(o=>o!==t&&o.g==='zz')) v=12;
+  if(t.c==='C'&&hand.some(o=>o!==t&&o.id===t.id)) v+=3;
+  if(t.c==='M'&&t.g!=='zz'&&hand.some(o=>o!==t&&o.g===t.g)) v+=3;
+  if(t.fam&&hand.some(o=>o!==t&&o.fam===t.fam&&o.c!==t.c)) v+=2;
+  return v;
+}
+function canBeBeaten(c,pool){
+  if(c.n===1) return pool.some(t=>t.c===c.cat&&t.r>c.rank);
+  const rel=pool.filter(t=>c.cat==='C'?t.c==='C':c.cat==='M'?t.c==='M':!!t.fam);
+  for(const s of subsets(rel,c.n)){const d=classify(s);if(d&&beats(d,c))return true;}
+  return false;
+}
+function handCombos(hand,minN){
+  const out=[];
+  for(let k=minN;k<=Math.min(4,hand.length);k++) for(const s of subsets(hand,k)){const c=classify(s);if(c)out.push({s,c});}
+  return out;
+}
+function unknownFor(st,seat){const h=st.hands[seat];return ALL.filter(t=>!h.includes(t)&&!st.seen.has(t.uid));}
+function suggestDiscard(hand,n){return hand.slice().sort((a,b)=>tileVal(a,hand)-tileVal(b,hand)).slice(0,n);}
+function aiChoose(st,seat){
+  const hand=st.hands[seat];
+  if(!st.trick){
+    const unk=unknownFor(st,seat);
+    let best=null;
+    for(const o of handCombos(hand,1)){
+      if(canBeBeaten(o.c,unk)) continue;
+      if(!best||o.c.n>best.c.n||(o.c.n===best.c.n&&o.c.rank>best.c.rank)) best=o;
+    }
+    if(best) return best.s;
+    return suggestDiscard(hand,1);
+  }
+  const {n,best}=st.trick;
+  let pick=null;
+  for(const s of subsets(hand,n)){
+    const c=classify(s);
+    if(c&&beats(c,best.combo)){
+      const cost=c.rank*100+s.reduce((a,t)=>a+tileVal(t,hand),0);
+      if(!pick||cost<pick.cost) pick={s,cost};
+    }
+  }
+  return pick?pick.s:suggestDiscard(hand,n);
+}
+function newState(hands,banker){
+  return {hands:hands.map(sortHand),banker,turn:banker,trick:null,won:[0,0,0,0],bonus:[0,0,0,0],seen:new Set(),done:false,finalWinner:null,trickNo:0,lastTrick:null};
+}
+function doPlay(st,seat,tiles){
+  st.hands[seat]=st.hands[seat].filter(t=>!tiles.includes(t));
+  const c=classify(tiles);let ev;
+  if(!st.trick){
+    st.trick={n:tiles.length,leader:seat,plays:[{seat,tiles,combo:c,up:true}],best:{seat,combo:c}};
+    ev={type:'lead',seat,tiles,combo:c,first:st.trickNo===0};
+  }else{
+    const prev=st.trick.best;
+    if(c&&beats(c,prev.combo)){st.trick.plays.push({seat,tiles,combo:c,up:true});st.trick.best={seat,combo:c};ev={type:'beat',seat,tiles,combo:c,prev};}
+    else{st.trick.plays.push({seat,tiles,combo:c,up:false});ev={type:'pad',seat,tiles,combo:c,prev};}
+  }
+  if(ev.type!=='pad') tiles.forEach(t=>st.seen.add(t.uid));
+  st.turn=(seat+1)%4;
+  ev.full=st.trick.plays.length===4;
+  return ev;
+}
+function resolveTrick(st){
+  const tr=st.trick, w=tr.best.seat;
+  st.won[w]+=tr.n; st.trickNo++;
+  const per=tr.best.combo.cat==='Z'?2:tr.best.combo.cat==='Q'?4:0;
+  if(per) for(let i=0;i<4;i++){if(i===w)continue;const p=per*(i===st.banker||w===st.banker?2:1);st.bonus[i]-=p;st.bonus[w]+=p;}
+  const last=st.hands.every(h=>h.length===0);
+  st.lastTrick=tr; st.trick=null; st.turn=w;
+  if(last){st.done=true;st.finalWinner=w;}
+  return {type:'win',seat:w,combo:tr.best.combo,n:tr.n,last,trick:tr,per};
+}
+function settle(st){
+  const w=st.finalWinner, pay=[0,0,0,0];
+  for(let i=0;i<4;i++){
+    if(i===w)continue;
+    let p=st.won[i]===0?5:4-st.won[i];
+    if(i===st.banker||w===st.banker) p*=2;
+    pay[i]-=p;pay[w]+=p;
+  }
+  return pay;
+}
+function narrate(ev,N,mode){
+  const nm=s=>N[s];
+  const list=ts=>ts.map(t=>t.n).join('、');
+  switch(ev.type){
+    case 'lead': return `${nm(ev.seat)}${ev.first?'做莊，':''}先出 <b>${ev.combo.name}</b>（${catText(ev.combo)}）。其他三家都要出 ${ev.tiles.length} 隻牌。`;
+    case 'beat': return `${nm(ev.seat)}出 <b>${ev.combo.name}</b>，壓過${nm(ev.prev.seat)}的${ev.prev.combo.name}，現在由${nm(ev.seat)}領先。`;
+    case 'pad':
+      if(mode==='reveal') return `${nm(ev.seat)}手上沒有比${ev.prev.combo.name}更大的${catText(ev.prev.combo)}，只好墊出 ${list(ev.tiles)}（蓋住，不計大小）。`;
+      if(mode==='mine') return `你墊出 ${list(ev.tiles)}（${whyNot(ev.combo,ev.prev.combo)}）。`;
+      return `${nm(ev.seat)}打不過，蓋住墊出 ${ev.tiles.length} 隻牌。`;
+    case 'win': return `${nm(ev.seat)}以 <b>${ev.combo.name}</b> 贏得這一墩，收 ${ev.n} 墩。`+(ev.per?`用${ev.combo.cat==='Z'?'至尊':'四隻組合'}贏墩，即時向其他三家各收 ${ev.per} 分（涉及莊家加倍）。`:'')+(ev.last?`這是最後一墩，<b>${nm(ev.seat)}贏得本局</b>。`:`下一手由${nm(ev.seat)}先出。`);
+  }
+}
+
+/* ================= DEMO SCRIPT ================= */
+const DEMO_N=['南家','東家','北家','西家'];
+function pickTiles(ids,pool){return ids.map(id=>{const i=pool.findIndex(t=>t.id===id);return pool.splice(i,1)[0];});}
+function buildDemo(){
+  const pool=ALL.slice();
+  const hands=[
+    pickTiles(['di','di','j9b','ren','fu','gao','j7a','j5b'],pool),          // 南
+    pickTiles(['tian','tian','j9a','mei','ban','j8a','j5a','ding3'],pool),    // 東 (莊)
+    pickTiles(['mei','ban','fu','hong','hong','gao','tong','er4'],pool),      // 北
+    pickTiles(['ren','he','he','chang','chang','j8b','j7b','tong'],pool),     // 西
+  ];
+  const st=newState(hands,1);
+  const steps=[];
+  const snap=(text,ev,trick)=>steps.push({hands:st.hands.map(h=>h.slice()),trick:trick?{n:trick.n,best:trick.best,plays:trick.plays.slice()}:null,won:st.won.slice(),banker:st.banker,ev,text});
+  snap(`<span class="kicker">開局</span>四家各拿 8 隻牌。<b>東家做莊</b>，先出牌。出牌次序是逆時針：東 → 北 → 西 → 南。按「下一步」開始。`,null,null);
+  let guard=0;
+  while(!st.done&&guard++<100){
+    const seat=st.turn;
+    const choice=aiChoose(st,seat);
+    const leading=!st.trick;
+    const sure=leading&&!canBeBeaten(classify(choice),unknownFor(st,seat));
+    const ev=doPlay(st,seat,choice);
+    let txt=narrate(ev,DEMO_N,'reveal');
+    if(leading) txt+= sure?' 按已經出現過的牌推算，其他人不可能壓過這手，必定贏得這一墩。':' 手上沒有必勝的牌，所以先出一隻小牌試探，把大牌留下。';
+    snap(`<span class="kicker">第 ${st.trickNo+1} 墩 · ${DEMO_N[seat]}</span>`+txt,ev,st.trick);
+    if(ev.full){
+      const w=resolveTrick(st);
+      snap(`<span class="kicker">第 ${st.trickNo} 墩結果</span>`+narrate(w,DEMO_N),w,w.trick);
+    }
+  }
+  const pay=settle(st);
+  const rows=[1,2,3,0].map(i=>`${DEMO_N[i]}${st.banker===i?'（莊）':''} ${st.won[i]} 墩 → ${pay[i]+st.bonus[i]>0?'+':''}${pay[i]+st.bonus[i]} 分`).join('；');
+  steps.push({hands:st.hands.map(h=>h.slice()),trick:null,won:st.won.slice(),banker:st.banker,ev:{type:'end',seat:st.finalWinner},
+    text:`<span class="kicker">計分</span><b>${DEMO_N[st.finalWinner]}</b>贏得最後一墩，贏得本局。以 4 墩為標準，其他三家少多少墩付多少分（0 墩付 5），凡涉及莊家的都加倍：${rows}。下一局由${DEMO_N[st.finalWinner]}做莊。`});
+  return steps;
+}
+
+if(typeof module!=='undefined'&&typeof document==='undefined'){module.exports={ALL,KIND,classify,beats,aiChoose,newState,doPlay,resolveTrick,settle,buildDemo,narrate,subsets};}
+
+/* ================= UI ================= */
+if(typeof document!=='undefined'){
+const $=s=>document.querySelector(s);
+const P={1:[[25,25,8.5]],2:[[25,14],[25,36]],3:[[13,12],[25,25],[37,38]],4:[[15,14],[35,14],[15,36],[35,36]],5:[[13,12],[37,12],[25,25],[13,38],[37,38]],6:[[16,11],[34,11],[16,25],[34,25],[16,39],[34,39]]};
+function tileSVG(t){
+  const half=(v,oy)=>P[v].map(([x,y,r])=>`<circle cx="${x}" cy="${y+oy}" r="${r||5.3}" class="${v===1||v===4||(t.id==='tian'&&x<25)?'pr':'pk'}"/>`).join('');
+  return `<svg viewBox="0 0 50 100" aria-hidden="true"><rect class="tf" x="1" y="1" width="48" height="98" rx="7"/><line class="tl" x1="7" y1="50" x2="43" y2="50"/>${half(t.a,0)}${half(t.b,50)}</svg>`;
+}
+const BACK=`<svg viewBox="0 0 50 100" aria-hidden="true"><rect class="bk" x="1" y="1" width="48" height="98" rx="7"/><rect class="bk2" x="6" y="6" width="38" height="88" rx="4"/><path class="bk2" d="M25 36 L36 50 L25 64 L14 50Z"/></svg>`;
+const tileHTML=t=>`<span class="tile" role="img" aria-label="${t.n}" title="${t.n}（${t.a}·${t.b}）">${tileSVG(t)}</span>`;
+const backHTML=()=>`<span class="tile" role="img" aria-label="蓋住的牌">${BACK}</span>`;
+const tilesHTML=ts=>ts.map(tileHTML).join('');
+
+/* static renders */
+$('#mastTiles').innerHTML=tileHTML(KIND.tian)+tileHTML(KIND.j9a);
+document.querySelectorAll('.tiles[data-t]').forEach(el=>{el.innerHTML=el.dataset.t.split(',').map(id=>tileHTML(KIND[id])).join('');});
+$('#civGrid').innerHTML=KINDS.filter(k=>k.c==='C').map((k,i)=>`<div class="civ">${tileHTML(k)}<span class="rk">第 ${i+1} 大</span><span class="nm">${k.n}</span><span class="pp">${k.a}·${k.b}${k.alt?' · '+k.alt:''}</span></div>`).join('');
+const milGroups=[['雜九',['j9a','j9b'],'最大的武牌'],['雜八',['j8a','j8b'],''],['雜七',['j7a','j7b'],''],['二四',['er4'],'又叫大六，與丁三合成至尊'],['雜五',['j5a','j5b'],''],['丁三',['ding3'],'全副最小，與二四合成至尊']];
+$('#milGrid').innerHTML=milGroups.map((g,i)=>`<div class="civ"><span class="tiles">${g[1].map(id=>tileHTML(KIND[id])).join('')}</span><span class="rk">第 ${i+1} 大</span><span class="nm">${g[0]}</span><span class="pp">${g[1].map(id=>KIND[id].a+'·'+KIND[id].b).join('、')}${g[2]?' · '+g[2]:''}</span></div>`).join('');
+
+/* tabs */
+const views=['rules','demo','play'];
+function show(v){
+  if(!views.includes(v)) v='rules';
+  views.forEach(x=>{$('#v-'+x).hidden=x!==v;$('#t-'+x).setAttribute('aria-selected',x===v);});
+  if(v==='play'&&!G) newGame();
+  if(v!=='demo') stopAuto();
+}
+document.querySelectorAll('.tabs button').forEach(b=>b.onclick=()=>{location.hash=b.dataset.view;show(b.dataset.view);});
+document.querySelectorAll('[data-go]').forEach(b=>b.onclick=()=>{location.hash=b.dataset.go;show(b.dataset.go);window.scrollTo({top:0});});
+window.addEventListener('hashchange',()=>show(location.hash.slice(1)));
+
+/* ---------- demo ---------- */
+const STEPS=buildDemo();let di=0,autoT=null;
+const ORDER=[1,2,3,0];
+function renderDemo(){
+  const s=STEPS[di];
+  $('#dText').innerHTML=s.text;
+  $('#dStep').textContent=`第 ${di+1} 步 / 共 ${STEPS.length} 步`;
+  $('#dBar').style.width=((di)/(STEPS.length-1)*100)+'%';
+  $('#dPrev').disabled=di===0;$('#dNext').disabled=di===STEPS.length-1;
+  const act=s.ev?s.ev.seat:null;
+  $('#dTable').innerHTML=ORDER.map(seat=>{
+    const play=s.trick&&s.trick.plays.find(p=>p.seat===seat);
+    const lead=s.trick&&s.trick.best.seat===seat;
+    const fresh=s.ev&&s.ev.seat===seat&&s.ev.type!=='win'&&s.ev.type!=='end';
+    let playHTML='';
+    if(play){
+      playHTML=`<div class="dplay ${play.up?'':'padded'} ${fresh?'fresh':''}">${play.up?'':'<span class="badge b-pad">墊</span>'}${tilesHTML(play.tiles)}${lead?'<span class="badge b-lead">'+(s.ev&&s.ev.type==='win'?'贏':'領先')+'</span>':''}</div>`;
+    } else playHTML='<div class="dplay"></div>';
+    return `<div class="drow ${act===seat?'act':''}"><div class="drow-head">${DEMO_N[seat]} ${s.banker===seat?'<span class="badge b-bank">莊</span>':''}<small>收 ${s.won[seat]} 墩 · 剩 ${s.hands[seat].length} 隻</small></div><div class="dhand">${tilesHTML(s.hands[seat])}</div>${playHTML}</div>`;
+  }).join('');
+}
+function stopAuto(){if(autoT){clearInterval(autoT);autoT=null;$('#dAuto').textContent='自動播放';}}
+$('#dPrev').onclick=()=>{stopAuto();if(di>0){di--;renderDemo();}};
+$('#dNext').onclick=()=>{stopAuto();if(di<STEPS.length-1){di++;renderDemo();}};
+$('#dRestart').onclick=()=>{stopAuto();di=0;renderDemo();};
+$('#dAuto').onclick=()=>{
+  if(autoT){stopAuto();return;}
+  if(di===STEPS.length-1) di=0;
+  $('#dAuto').textContent='暫停';renderDemo();
+  autoT=setInterval(()=>{if(di<STEPS.length-1){di++;renderDemo();}else stopAuto();},1900);
+};
+document.addEventListener('keydown',e=>{
+  if($('#v-demo').hidden) return;
+  if(e.key==='ArrowRight') $('#dNext').click();
+  if(e.key==='ArrowLeft') $('#dPrev').click();
+});
+renderDemo();
+
+/* ---------- game ---------- */
+const GN=['你','東家','北家','西家'];
+const GFULL=['南家（你）','東家','北家','西家'];
+let G=null,timer=null;
+function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+const SAVE_KEY='tiangow.v1';
+function loadSaved(){try{const v=JSON.parse(localStorage.getItem(SAVE_KEY));if(v&&Array.isArray(v.scores)&&v.scores.length===4)return v;}catch(e){}return null;}
+function saveGame(){try{localStorage.setItem(SAVE_KEY,JSON.stringify({scores:G.scores,banker:G.banker,handNo:G.handNo}));}catch(e){}}
+function newGame(fresh){
+  clearTimeout(timer);
+  if(fresh){try{localStorage.removeItem(SAVE_KEY);}catch(e){}}
+  const s=fresh?null:loadSaved();
+  G={scores:s?s.scores:[0,0,0,0],banker:s?s.banker:0,handNo:s?s.handNo:0};
+  newHand();
+}
+function newHand(){
+  clearTimeout(timer);
+  const d=shuffle(ALL.slice());
+  G.st=newState([0,1,2,3].map(i=>d.slice(i*8,i*8+8)),G.banker);
+  G.sel=new Set();G.log=[];G.flash=null;G.result=null;G.hints=null;G.handNo++;
+  addLog(`第 ${G.handNo} 局開始。${GFULL[G.banker]}做莊，先出牌。`,'sys');
+  advance();
+}
+function addLog(html,cls){G.log.unshift({html,cls:cls||''});}
+function advance(){
+  const st=G.st;
+  if(st.done) return;
+  if(st.turn===0){G.busy=false;renderGame();return;}
+  G.busy=true;renderGame();
+  timer=setTimeout(()=>{const seat=st.turn;const ev=doPlay(st,seat,aiChoose(st,seat));addLog(narrate(ev,GN));afterPlay();},750);
+}
+function afterPlay(){
+  G.busy=true;renderGame();
+  const st=G.st;
+  if(st.trick&&st.trick.plays.length===4){
+    timer=setTimeout(()=>{
+      const w=resolveTrick(st);addLog(narrate(w,GN),'win');G.flash=w;renderGame();
+      timer=setTimeout(()=>{G.flash=null;if(st.done)finishHand();else advance();},1300);
+    },850);
+  } else advance();
+}
+function finishHand(){
+  const st=G.st,pay=settle(st);
+  pay.forEach((p,i)=>G.scores[i]+=p+st.bonus[i]);
+  G.banker=st.finalWinner;
+  G.result={pay,winner:st.finalWinner};
+  saveGame();
+  addLog(`${GN[st.finalWinner]}贏得最後一墩，贏得第 ${G.handNo} 局。`,'win');
+  G.busy=true;renderGame();
+}
+function selTiles(){return G.st.hands[0].filter(t=>G.sel.has(t.uid));}
+function renderGame(){
+  const st=G.st;
+  $('#handInfo').textContent=`第 ${G.handNo} 局 · 第 ${Math.min(st.trickNo+1,8)} 手`;
+  $('#scorebar').innerHTML=[0,1,2,3].map(i=>`<div class="sc ${i===0?'me':''}"><div class="who">${GFULL[i]}${st.banker===i?' · 莊':''}</div><div class="pts">${G.scores[i]>0?'+':''}${G.scores[i]}</div><div class="tr">本局 ${st.won[i]} 墩</div></div>`).join('');
+  const tr=st.trick||(G.flash?G.flash.trick:null);
+  document.querySelectorAll('.seat').forEach(el=>{
+    const i=+el.dataset.p;
+    const play=tr&&tr.plays.find(p=>p.seat===i);
+    const lead=tr&&tr.best.seat===i;
+    let pl='';
+    if(play){
+      const show=play.up||i===0;
+      pl=(show?tilesHTML(play.tiles):play.tiles.map(backHTML).join(''))+(play.up?'':' <span class="badge b-pad">墊</span>')+(lead?' <span class="badge b-lead">'+(G.flash?'贏':'領先')+'</span>':'');
+    }
+    el.className='seat'+(!st.done&&!G.flash&&st.turn===i?' turn':'');
+    el.innerHTML=`<div class="seat-name">${GFULL[i]} ${st.banker===i?'<span class="badge b-bank">莊</span>':''}</div><div class="seat-meta">${i===0?'':'剩 '+st.hands[i].length+' 隻 · '}收 ${st.won[i]} 墩</div><div class="played ${play&&!play.up?'padded':''}">${pl}</div>`;
+  });
+  // center
+  let c='';
+  if(G.flash) c=`<strong>${GN[G.flash.seat]}贏得這一墩</strong>${G.flash.combo.name} · 收 ${G.flash.n} 墩`;
+  else if(st.done) c='<strong>本局完結</strong>';
+  else if(!st.trick) c=`<strong>${st.turn===0?'輪到你先出':GN[st.turn]+'先出'}</strong>第 ${st.trickNo+1} 墩`;
+  else c=`<strong>要跟 ${st.trick.n} 隻</strong>目前最大：${GN[st.trick.best.seat]}的${st.trick.best.combo.name}`;
+  $('#center').innerHTML=c;
+  // result
+  const r=$('#result');
+  if(G.result){
+    r.hidden=false;
+    const sg=v=>(v>0?'+':'')+v, hasB=st.bonus.some(v=>v);
+    r.innerHTML=`<h3>${GFULL[G.result.winner]}贏得本局</h3><div style="font-size:13px;color:var(--table-muted)">以 4 墩為標準結算，0 墩付 5 分，涉及莊家的加倍。</div><table><tr><td></td><td>墩數</td><td class="num">結算</td>${hasB?'<td class="num">即時收分</td>':''}<td class="num">合計</td></tr>${[0,1,2,3].map(i=>`<tr><td>${GFULL[i]}${st.banker===i?'（莊）':''}</td><td>${st.won[i]}</td><td class="num">${sg(G.result.pay[i])}</td>${hasB?`<td class="num">${sg(st.bonus[i])}</td>`:''}<td class="num">${sg(G.result.pay[i]+st.bonus[i])}</td></tr>`).join('')}</table><div><button class="btn primary" id="bNext">下一局</button></div>`;
+    $('#bNext').onclick=()=>newHand();
+  } else r.hidden=true;
+  // hand
+  const my=!G.busy&&!st.done&&st.turn===0;
+  $('#hand').innerHTML=st.hands[0].map(t=>`<button class="htile" data-u="${t.uid}" aria-pressed="${G.sel.has(t.uid)}" aria-label="${t.n}（${t.a}·${t.b}）" ${my?'':'disabled'}>${tileHTML(t)}<span class="tname">${t.n}</span></button>`).join('');
+  document.querySelectorAll('.htile').forEach(b=>b.onclick=()=>{const u=b.dataset.u;G.sel.has(u)?G.sel.delete(u):G.sel.add(u);G.hints=null;renderGame();});
+  // status & buttons
+  const sel=selTiles();let line='',lineCls='',canPlay=false,label='出牌';
+  let head;
+  if(st.done) head='本局完結。';
+  else if(!my) head=G.flash?'收牌中…':`等候${GN[st.turn]}出牌…`;
+  else if(!st.trick) head='<b>輪到你先出。</b>選一個牌型：單張、對子、三隻或四隻。';
+  else head=`<b>輪到你。</b>要出 ${st.trick.n} 隻牌，目前最大是${GN[st.trick.best.seat]}的${st.trick.best.combo.name}（${catText(st.trick.best.combo)}）。`;
+  if(my&&sel.length){
+    const c=classify(sel);
+    if(!st.trick){
+      if(c){line=`已選：${c.name}（${catText(c)}）`;lineCls='ok';canPlay=true;}
+      else {line='這幾隻牌組不成牌型。';lineCls='warn';}
+    } else {
+      const n=st.trick.n;
+      if(sel.length!==n){line=`請選 ${n} 隻（已選 ${sel.length} 隻）`;lineCls='warn';}
+      else if(beats(c,st.trick.best.combo)){line=`可以壓過：${c.name}（${catText(c)}）`;lineCls='ok';canPlay=true;label='出牌壓過';}
+      else {line=`這樣出會變成墊牌：${whyNot(c,st.trick.best.combo)}。`;canPlay=true;label='蓋住墊牌';}
+    }
+  } else if(my&&st.trick){line=`點選 ${st.trick.n} 隻牌。`;}
+  else if(my){line='點選手上的牌。';}
+  $('#status').innerHTML=head+(line?`<span class="sel ${lineCls}">${line}</span>`:'');
+  $('#bPlay').disabled=!canPlay;$('#bPlay').textContent=label;
+  $('#bHint').disabled=!my;$('#bClear').disabled=!my||!sel.length;
+  // hints
+  const h=$('#hints');
+  if(my&&G.hints) h.innerHTML=G.hints; else h.innerHTML='';
+  h.querySelectorAll('[data-pick]').forEach(b=>b.onclick=()=>{G.sel=new Set(b.dataset.pick.split(','));G.hints=null;renderGame();});
+  $('#log').innerHTML=G.log.map(l=>`<li class="${l.cls}">${l.html}</li>`).join('');
+}
+$('#bPlay').onclick=()=>{
+  const st=G.st,sel=selTiles();
+  const ev=doPlay(st,0,sel);G.sel.clear();G.hints=null;
+  addLog(narrate(ev,GN,ev.type==='pad'?'mine':''));
+  afterPlay();
+};
+$('#bClear').onclick=()=>{G.sel.clear();G.hints=null;renderGame();};
+$('#bHint').onclick=()=>{
+  const st=G.st,hand=st.hands[0];
+  const btn=(o,extra)=>`<button class="hint" data-pick="${o.s.map(t=>t.uid).join(',')}"><span class="tiles">${tilesHTML(o.s)}</span><span>${o.c?o.c.name+'（'+catText(o.c)+'）':'墊牌'}${extra||''}</span></button>`;
+  if(!st.trick){
+    const unk=unknownFor(st,0);
+    const all=handCombos(hand,1);
+    const sure=all.filter(o=>!canBeBeaten(o.c,unk));
+    const multi=all.filter(o=>o.c.n>1);
+    let html='';
+    if(sure.length) html+=`<p>以下牌型別人已經沒可能壓過（標「必勝」）：</p>`+sure.sort((a,b)=>b.c.n-a.c.n||b.c.rank-a.c.rank).map(o=>btn(o,' <span class="sure">必勝</span>')).join('');
+    const rest=multi.filter(o=>!sure.includes(o));
+    if(rest.length) html+=`<p>你手上的其他組合：</p>`+rest.map(o=>btn(o)).join('');
+    if(!sure.length) html+=`<p>沒有必勝的牌。可以先出一隻小牌試探，把大牌留到最後。</p>`+btn({s:suggestDiscard(hand,1),c:classify(suggestDiscard(hand,1))});
+    G.hints=html;
+  } else {
+    const n=st.trick.n,out=[];
+    for(const s of subsets(hand,n)){const c=classify(s);if(beats(c,st.trick.best.combo))out.push({s,c});}
+    out.sort((a,b)=>a.c.rank-b.c.rank);
+    if(out.length) G.hints=`<p>可以壓過的牌（由小到大）：</p>`+out.map(o=>btn(o)).join('');
+    else G.hints=`<p>你沒有能壓過${st.trick.best.combo.name}的${catText(st.trick.best.combo)}，建議墊出最沒用的 ${n} 隻：</p>`+btn({s:suggestDiscard(hand,n),c:null});
+  }
+  renderGame();
+};
+$('#bNewGame').onclick=()=>newGame(true);
+
+show(location.hash.slice(1)||'rules');
+}
+</script>
+
+<script>
+if('serviceWorker' in navigator && location.protocol==='https:' && !window.Capacitor){
+  window.addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));
+}
+</script>
+</body>
+</html>

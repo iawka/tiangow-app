@@ -1,0 +1,23 @@
+{
+  "name": "tiangow-app",
+  "version": "1.0.0",
+  "private": true,
+  "description": "天九牌教室 – offline Tien Gow tutorial and game for iOS and Android",
+  "scripts": {
+    "sync": "cap sync",
+    "android": "cap sync android && cap open android",
+    "ios": "cap sync ios && cap open ios",
+    "icons": "capacitor-assets generate --iconBackgroundColor '#38241e' --iconBackgroundColorDark '#38241e' --splashBackgroundColor '#38241e' --splashBackgroundColorDark '#38241e'"
+  },
+  "dependencies": {
+    "@capacitor/android": "^7.6.10",
+    "@capacitor/core": "^7.6.10",
+    "@capacitor/ios": "^7.6.10",
+    "@capacitor/splash-screen": "^7.0.5",
+    "@capacitor/status-bar": "^7.0.6"
+  },
+  "devDependencies": {
+    "@capacitor/assets": "^3.0.5",
+    "@capacitor/cli": "^7.6.10"
+  }
+}
